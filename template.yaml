@@ -1,0 +1,75 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sns-demo
+
+  Sample SAM Template for sns-demo
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 100
+    Runtime: nodejs14.x
+    MemorySize: 128
+    Handler: index.handler
+    Layers:
+      - !Ref APISharedLayer
+Parameters:
+  Stage:
+    Description: 'stage name when deploy'
+    Type: String
+    Default: Dev
+
+Resources:
+  #==============================================================
+  # 共通レイヤー定義
+  #==============================================================
+  ExampleTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      DisplayName: example-sns-topic
+      TopicName: example-sns-topic
+      Subscription:
+        - Protocol: lambda
+          Endpoint: !GetAtt SubscriptionFunction.Arn
+  #==============================================================
+  # 共通レイヤー定義
+  #==============================================================
+  APISharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: SNSDemoAPI-APISharedLayer
+      Description: 'SNSDemoAPI-APISharedLayer'
+      ContentUri: src/layer/APISharedLayer
+      CompatibleRuntimes:
+        - nodejs14.x
+      RetentionPolicy: Retain
+  #==============================================================
+  # Lambda定義
+  #==============================================================
+  SNSDemoAPI:
+    Type: AWS::Serverless::Api
+    Name: SNS-Demo-API
+    Properties:
+      StageName: !Sub ${Stage}
+  SubscriptionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SNSDemoAPI-SubscriptionFunction
+      CodeUri: src/function/subscription
+      Description: 'subscription function'
+  PublishFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: SNSDemoAPI-PublishFunction
+      CodeUri: src/function/publish
+      Description: 'publish function'
+      Policies:
+        - arn:aws:iam::aws:policy/AmazonSNSFullAccess
+      Events:
+        api:
+          Type: Api
+          Properties:
+            Path: /schedule
+            Method: delete
+            RestApiId: !Ref SNSDemoAPI
