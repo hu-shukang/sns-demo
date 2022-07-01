@@ -58,6 +58,12 @@ Resources:
       FunctionName: SNSDemoAPI-SubscriptionFunction
       CodeUri: src/function/subscription
       Description: 'subscription function'
+  SubscriptionFunctionInvokePermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:InvokeFunction'
+      FunctionName: !Ref SubscriptionFunction
+      Principal: sns.amazonaws.com
   PublishFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -71,5 +77,5 @@ Resources:
           Type: Api
           Properties:
             Path: /schedule
-            Method: delete
+            Method: post
             RestApiId: !Ref SNSDemoAPI

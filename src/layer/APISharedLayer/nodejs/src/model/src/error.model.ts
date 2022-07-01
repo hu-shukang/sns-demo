@@ -1,5 +1,3 @@
-import { ValidateInfoModel } from './validate-info.model';
-
 export class HttpError extends Error {
   private statusCode: number;
 
@@ -10,18 +8,5 @@ export class HttpError extends Error {
 
   public getStatusCode(): number {
     return this.statusCode;
-  }
-}
-
-export class ValidateError extends Error {
-  private infoList: ValidateInfoModel[];
-
-  constructor(infoList: ValidateInfoModel[]) {
-    super(JSON.stringify(infoList));
-    this.infoList = infoList;
-  }
-
-  public getInfoList(): ValidateInfoModel[] {
-    return this.infoList;
   }
 }
